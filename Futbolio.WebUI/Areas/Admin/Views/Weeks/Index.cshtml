@@ -1,0 +1,95 @@
+@using System.Globalization
+@model Futbolio.WebUI.ViewModels.Admin.WeeksViewModel
+@{
+    ViewData["Title"] = "Haftalar";
+    ViewData["Crumb"] = "Yönetim / Haftalar";
+    ViewData["ActivePage"] = "Weeks";
+
+    var tr = new CultureInfo("tr-TR");
+    var expected = Model.ExpectedMatchesPerWeek;
+    string Pct(int part, int total) => total == 0 ? "0" : (part * 100.0 / total).ToString("0.#", CultureInfo.InvariantCulture);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/matches.css" asp-append-version="true" />
+}
+
+<div class="page-head">
+    <div>
+        <span class="page-eyebrow">Serie A 2026/27</span>
+        <h1 class="page-title">Haftalar</h1>
+        <p class="page-desc">Her haftanın maç sayısı, durumu ve fikstür kurallarına uygunluğu. Maçları düzenlemek için haftaya tıklayın.</p>
+    </div>
+    <a class="btn-a btn-a--primary" asp-controller="Matches" asp-action="Index">
+        <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Maç Ekle
+    </a>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="form-alert is-visible" role="alert" style="margin-bottom:14px">@ViewBag.Error</div>
+}
+
+@if (Model.Weeks.Count == 0 && ViewBag.Error == null)
+{
+    <section class="card-a"><table class="mini-table"><tbody><tr class="table-empty"><td><strong>Henüz fikstür yok</strong>Maçlar sayfasından ilk haftanın maçlarını ekleyin.</td></tr></tbody></table></section>
+}
+
+<div class="week-grid">
+    @foreach (var w in Model.Weeks)
+    {
+        var problems = new List<string>();
+        if (expected > 0 && w.Total < expected) problems.Add($"{expected - w.Total} maç eksik ({w.Total}/{expected}), {w.IdleTeams} takım bu hafta oynamıyor");
+        if (expected > 0 && w.Total > expected) problems.Add($"{w.Total - expected} maç fazla ({w.Total}/{expected})");
+        if (w.DuplicateTeams.Count > 0) problems.Add("Birden fazla maçı olan takım: " + string.Join(", ", w.DuplicateTeams));
+
+        <article class="card-a week-card">
+            <div class="week-card__head">
+                <h2 class="week-card__title">@w.Week. Hafta</h2>
+                @if (w.Completed == w.Total)
+                {
+                    <span class="badge-a badge-a--Finished">Tamamlandı</span>
+                }
+                else if (w.Live > 0)
+                {
+                    <span class="badge-a badge-a--Live">Canlı maç var</span>
+                }
+                else if (w.Completed == 0)
+                {
+                    <span class="badge-a badge-a--NotStarted">Başlamadı</span>
+                }
+                else
+                {
+                    <span class="badge-a badge-a--NotStarted">Devam ediyor</span>
+                }
+            </div>
+            <p class="week-card__range">@w.Start.ToString("d MMMM", tr) – @w.End.ToString("d MMMM yyyy", tr)</p>
+
+            <dl class="week-card__facts">
+                <div><dt>Maç</dt><dd>@w.Total</dd></div>
+                <div><dt>Biten</dt><dd>@w.Completed</dd></div>
+                <div><dt>Planlı</dt><dd>@w.Scheduled</dd></div>
+                <div><dt>Gol</dt><dd>@w.Goals</dd></div>
+            </dl>
+
+            <div class="week-bar" aria-hidden="true">
+                <span style="width:@Pct(w.Completed, w.Total)%"></span>
+                <span style="width:@Pct(w.Live, w.Total)%"></span>
+            </div>
+
+            @if (problems.Count > 0)
+            {
+                @foreach (var p in problems)
+                {
+                    <p class="week-warn">⚠ @p</p>
+                }
+            }
+            else
+            {
+                <p class="week-ok">✓ Fikstür kurallara uygun</p>
+            }
+
+            <a class="card-link" href="/Admin/Matches?week=@w.Week">Bu haftanın maçları →</a>
+        </article>
+    }
+</div>

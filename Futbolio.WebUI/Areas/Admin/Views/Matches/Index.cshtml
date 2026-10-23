@@ -1,0 +1,212 @@
+﻿@model Futbolio.WebUI.ViewModels.Match.MatchIndexViewModel
+@{
+    ViewData["Title"] = "Maç Yönetimi";
+    ViewData["Crumb"] = "Yönetim / Maçlar";
+    ViewData["ActivePage"] = "Matches";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+
+    var matches = Model?.Matches ?? new List<Futbolio.WebUI.DTOs.Match.MatchResultDto>();
+    var teams = Model?.Teams ?? new List<Futbolio.WebUI.DTOs.Team.TeamResultDto>();
+    var weeks = matches.Select(m => m.Week).Distinct().OrderBy(w => w).ToList();
+
+    // API durum kodu -> arayüz anahtarı (0: Planlandı, 1: Canlı, 2: Tamamlandı)
+    string StatusKey(int status) => status switch { 1 => "Live", 2 => "Finished", _ => "NotStarted" };
+    string Color(string? c, string fallback) => string.IsNullOrWhiteSpace(c) ? fallback : c;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/matches.css" asp-append-version="true" />
+}
+
+<div class="page-head">
+    <div>
+        <span class="page-eyebrow">Serie A 2026/27</span>
+        <h1 class="page-title">Maç Yönetimi</h1>
+        <p class="page-desc">Serie A karşılaşmalarını görüntüleyebilir, ekleyebilir, düzenleyebilir ve silebilirsiniz.</p>
+    </div>
+    <button type="button" class="btn-a btn-a--primary" data-open-create>
+        <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Yeni Maç Ekle
+    </button>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="form-alert is-visible" role="alert">@ViewBag.Error</div>
+}
+@if (TempData["MatchesError"] is string matchesError)
+{
+    <div class="form-alert is-visible" role="alert">@matchesError</div>
+}
+
+<section class="card-a" aria-label="Maç listesi">
+    <form class="filter-bar" data-filter-form role="search">
+        <div class="filter-search">
+            <label class="field-label" for="f-team">Takım Ara</label>
+            <div class="input-icon">
+                <svg class="icon" aria-hidden="true"><use href="#i-search" /></svg>
+                <input class="input-a" id="f-team" name="team" type="search" placeholder="Takım adı yazın" autocomplete="off">
+            </div>
+        </div>
+        <div>
+            <label class="field-label" for="f-week">Hafta Seç</label>
+            <select class="select-a" id="f-week" name="week">
+                <option value="">Tüm Haftalar</option>
+                @foreach (var w in weeks)
+                {
+                    <option value="@w">@w. Hafta</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label class="field-label" for="f-status">Durum</label>
+            <select class="select-a" id="f-status" name="status">
+                <option value="">Tümü</option>
+                <option value="NotStarted">Başlamadı</option>
+                <option value="Live">Canlı</option>
+                <option value="Finished">Tamamlandı</option>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="button" class="btn-a btn-a--ghost" data-filter-reset>Temizle</button>
+            <button type="submit" class="btn-a btn-a--secondary">Filtrele</button>
+        </div>
+    </form>
+
+    <div class="table-scroll">
+        <table class="match-table">
+            <caption class="visually-hidden">Serie A maç listesi</caption>
+            <thead>
+                <tr>
+                    <th scope="col" class="col-id">ID</th>
+                    <th scope="col">Hafta</th>
+                    <th scope="col">Tarih</th>
+                    <th scope="col">Saat</th>
+                    <th scope="col">Ev Sahibi</th>
+                    <th scope="col" class="col-score">Skor</th>
+                    <th scope="col">Deplasman</th>
+                    <th scope="col">Durum</th>
+                    <th scope="col" class="col-actions">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody data-match-rows>
+                @* Satırlar matches.js tarafından çizilir; başlangıç verisi bu data-* değerlerinden okunur *@
+                @foreach (var m in matches)
+                {
+                    <tr data-match-id="@m.Id"
+                        data-week="@m.Week"
+                        data-date="@m.MatchDate.ToString("yyyy-MM-dd")"
+                        data-time="@m.MatchDate.ToString("HH:mm")"
+                        data-home="@m.HomeTeamId"
+                        data-away="@m.AwayTeamId"
+                        data-home-score="@m.HomeScore"
+                        data-away-score="@m.AwayScore"
+                        data-status="@StatusKey(m.Status)"
+                        data-stadium="@m.Stadium"></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="table-foot">
+        <span data-result-count></span>
+        <span>Sezon 2026/27</span>
+    </div>
+</section>
+
+<!-- Ekleme + düzenleme modalı -->
+<dialog class="modal-a" id="match-modal" aria-labelledby="match-modal-title">
+    <form data-match-form novalidate>
+        <div class="modal-head">
+            <h2 class="modal-title" id="match-modal-title">Yeni Maç Ekle</h2>
+            <button type="button" class="icon-btn" data-modal-close aria-label="Kapat"><svg class="icon" aria-hidden="true"><use href="#i-x" /></svg></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-alert" data-form-alert role="alert">Lütfen işaretli alanları kontrol edin.</div>
+            <input type="hidden" name="id">
+            <div class="form-grid">
+                <div class="form-field" data-field="week">
+                    <label class="field-label" for="m-week">Hafta <span class="req">*</span></label>
+                    <select class="select-a" id="m-week" name="week" aria-describedby="m-week-err"></select>
+                    <p class="field-error" id="m-week-err"></p>
+                </div>
+                <div class="form-field" data-field="status">
+                    <label class="field-label" for="m-status">Maç Durumu</label>
+                    <select class="select-a" id="m-status" name="status">
+                        <option value="NotStarted" selected>Başlamadı</option>
+                        <option value="Live">Canlı</option>
+                        <option value="Finished">Tamamlandı</option>
+                    </select>
+                </div>
+                <div class="form-field" data-field="home">
+                    <label class="field-label" for="m-home">Ev Sahibi Takım <span class="req">*</span></label>
+                    <select class="select-a" id="m-home" name="home" aria-describedby="m-home-err" data-team-select>
+                        <option value="">Takım seçin</option>
+                        @foreach (var t in teams)
+                        {
+                            <option value="@t.Id"
+                                    data-stadium="@t.Stadium"
+                                    data-logo="@t.LogoUrl"
+                                    data-color-a="@Color(t.ColorA, "#1E5BD8")"
+                                    data-color-b="@Color(t.ColorB, "#FFFFFF")">@t.Name</option>
+                        }
+                    </select>
+                    <p class="field-error" id="m-home-err"></p>
+                </div>
+                <div class="form-field" data-field="away">
+                    <label class="field-label" for="m-away">Deplasman Takımı <span class="req">*</span></label>
+                    <select class="select-a" id="m-away" name="away" aria-describedby="m-away-err"></select>
+                    <p class="field-error" id="m-away-err"></p>
+                </div>
+                <div class="form-field" data-field="date">
+                    <label class="field-label" for="m-date">Maç Tarihi <span class="req">*</span></label>
+                    <input class="input-a" id="m-date" name="date" type="date" aria-describedby="m-date-err">
+                    <p class="field-error" id="m-date-err"></p>
+                </div>
+                <div class="form-field" data-field="time">
+                    <label class="field-label" for="m-time">Maç Saati <span class="req">*</span></label>
+                    <input class="input-a" id="m-time" name="time" type="time" aria-describedby="m-time-err">
+                    <p class="field-error" id="m-time-err"></p>
+                </div>
+                <div class="form-field span-2" data-field="stadium">
+                    <label class="field-label" for="m-stadium">Stadyum</label>
+                    <input class="input-a" id="m-stadium" name="stadium" type="text" placeholder="Ev sahibi seçilince otomatik dolar">
+                </div>
+                <div class="score-fields span-2" data-score-fields hidden>
+                    <div class="form-field" data-field="homeScore">
+                        <label class="field-label" for="m-hs">Ev sahibi skoru <span class="req">*</span></label>
+                        <input class="input-a" id="m-hs" name="homeScore" type="number" min="0" max="20" inputmode="numeric" aria-describedby="m-hs-err">
+                        <p class="field-error" id="m-hs-err"></p>
+                    </div>
+                    <div class="form-field" data-field="awayScore">
+                        <label class="field-label" for="m-as">Deplasman skoru <span class="req">*</span></label>
+                        <input class="input-a" id="m-as" name="awayScore" type="number" min="0" max="20" inputmode="numeric" aria-describedby="m-as-err">
+                        <p class="field-error" id="m-as-err"></p>
+                    </div>
+                </div>
+            </div>
+            <p class="field-hint" style="margin:14px 0 0">Canlı veya Tamamlandı seçildiğinde skor alanları açılır.</p>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn-a btn-a--secondary" data-modal-close>Vazgeç</button>
+            <button type="submit" class="btn-a btn-a--primary" data-submit>Kaydet</button>
+        </div>
+    </form>
+</dialog>
+
+<!-- Silme onayı -->
+<dialog class="modal-a modal-a--sm" id="delete-modal" aria-labelledby="delete-modal-title">
+    <form method="dialog">
+        <div class="modal-head">
+            <h2 class="modal-title" id="delete-modal-title">Maçı sil</h2>
+            <button type="submit" value="cancel" class="icon-btn" aria-label="Kapat"><svg class="icon" aria-hidden="true"><use href="#i-x" /></svg></button>
+        </div>
+        <div class="modal-body"><p class="confirm-text" data-delete-text></p></div>
+        <div class="modal-foot">
+            <button type="submit" value="cancel" class="btn-a btn-a--secondary">Vazgeç</button>
+            <button type="submit" value="confirm" class="btn-a btn-a--danger">Evet, sil</button>
+        </div>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/matches.js" asp-append-version="true"></script>
+}

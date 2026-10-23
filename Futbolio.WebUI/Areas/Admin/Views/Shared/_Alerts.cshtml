@@ -1,0 +1,14 @@
+@if (TempData["Success"] is string ok)
+{
+    <div class="alert alert--success" role="status">
+        <svg class="icon"><use href="#i-check" /></svg><span>@ok</span>
+        <button type="button" class="alert__close" data-alert-close aria-label="Kapat">×</button>
+    </div>
+}
+@if (TempData["Error"] is string err)
+{
+    <div class="alert alert--error" role="alert">
+        <svg class="icon"><use href="#i-alert" /></svg><span>@err</span>
+        <button type="button" class="alert__close" data-alert-close aria-label="Kapat">×</button>
+    </div>
+}

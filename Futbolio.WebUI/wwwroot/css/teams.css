@@ -1,0 +1,122 @@
+/* Takımlar sayfasına özel stiller (ortak olanlar admin.css'te) */
+.team-table { width: 100%; min-width: 920px; border-collapse: collapse; }
+.team-table th {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: #F8FAFC;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.team-table td {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.team-table tbody tr:last-child td { border-bottom: 0; }
+.team-table tbody tr:hover td { background: var(--row-hover); }
+.team-table tbody tr.is-inactive td { color: var(--dim); }
+.team-table tbody tr.is-inactive .team-name { color: var(--muted); }
+.team-table tbody tr.is-new td { animation: row-flash 2.4s ease-out; }
+.team-table .col-id { width: 56px; color: var(--muted); font-weight: 600; }
+
+.sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.sort-btn:hover { color: var(--text); }
+.sort-btn::after { content: "↕"; color: var(--line-strong); font-size: .85em; }
+[aria-sort="ascending"] .sort-btn::after { content: "↑"; color: var(--blue); }
+[aria-sort="descending"] .sort-btn::after { content: "↓"; color: var(--blue); }
+.sort-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; border-radius: 3px; }
+
+/* Arma (3 harfli kod) */
+.team-cell { display: flex; align-items: center; gap: 12px; }
+.team-table .team-crest {
+  --size: 34px;
+  display: inline-grid;
+  place-items: center;
+}
+.team-crest--lg { --size: 64px; }
+.team-table .team-crest,
+.crest-preview .team-crest {
+  width: var(--size);
+  height: var(--size);
+  background: linear-gradient(180deg, var(--crest-a) 0 70%, var(--crest-b) 70% 100%);
+  color: var(--crest-ink, #fff);
+  font-family: var(--font-display);
+  font-size: calc(var(--size) * .33);
+  font-weight: 700;
+  line-height: 1;
+  padding-bottom: calc(var(--size) * .12);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .14);
+}
+.crest-preview .team-crest { flex: none; display: inline-grid; place-items: center; border-radius: 50%; }
+.team-name { display: block; color: var(--text); font-weight: 600; line-height: 1.2; }
+.team-code { color: var(--dim); font-size: .78rem; font-weight: 600; letter-spacing: .04em; }
+.city-cell small { display: block; color: var(--dim); font-size: .78rem; }
+
+.swatches { display: inline-flex; }
+.swatch {
+  width: 18px; height: 18px;
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 0 1px var(--line-strong);
+}
+.swatch + .swatch { margin-left: -6px; }
+
+/* Durum rozeti + bölge */
+.badge-a--active { background: var(--it-green-soft); color: var(--it-green); }
+.badge-a--active::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--it-green); }
+.badge-a--inactive { background: #EDF0F5; color: var(--muted); }
+
+.region { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .78rem; }
+.region::before { content: ""; width: 8px; height: 8px; border-radius: 2px; background: var(--rc); }
+.region--north { --rc: var(--it-green); }
+.region--center { --rc: #9AA5B8; }
+.region--south { --rc: var(--it-red); }
+.region--island { --rc: var(--blue); }
+
+/* Modal: arma önizleme + renk seçici */
+.crest-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: #FAFBFD;
+}
+.crest-preview__name { display: block; font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
+.crest-preview__meta { color: var(--muted); font-size: .85rem; }
+.color-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.color-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+}
+.color-input input[type="color"] { width: 30px; height: 26px; padding: 0; border: 0; background: none; cursor: pointer; }
+.color-input code { color: var(--text-2); font-size: .85rem; }
+.form-field.has-error .color-input { border-color: var(--it-red); }
+.code-input { text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+
+@media (max-width: 575.98px) {
+  .color-row { grid-template-columns: 1fr; }
+}

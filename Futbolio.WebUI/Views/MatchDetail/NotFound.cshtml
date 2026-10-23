@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = "Maç bulunamadı";
+}
+
+<main class="container-xl py-5 text-center">
+    <h1 class="h3 mb-3">Maç gösterilemiyor</h1>
+    <p class="text-secondary mb-4">@ViewBag.Message</p>
+    <a class="btn btn-primary" asp-controller="Fixtures" asp-action="Index">Fikstüre dön</a>
+</main>

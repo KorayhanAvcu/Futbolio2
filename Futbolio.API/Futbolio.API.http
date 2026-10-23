@@ -1,0 +1,6 @@
+@Futbolio.API_HostAddress = http://localhost:5033
+
+GET {{Futbolio.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

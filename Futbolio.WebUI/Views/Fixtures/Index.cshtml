@@ -1,0 +1,169 @@
+﻿@model Futbolio.WebUI.ViewModels.Match.FixturesViewModel
+@{
+    ViewData["Title"] = "Serie A Fikstür";
+    ViewData["BodyClass"] = "fixtures-page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet"
+          href="~/css/fixtures.css"
+          asp-append-version="true" />
+}
+
+<main class="fixtures-shell container-xl"
+      data-fixtures-page
+      data-current-week="@Model.CurrentWeek">
+
+    <header class="fixtures-hero">
+        <div class="hero-league">
+            <span class="hero-league__name">
+                <span class="league-mark" aria-hidden="true">SA</span>
+                İtalya, Serie A
+            </span>
+
+            <label class="season-select">
+                <span class="visually-hidden">Sezon</span>
+                <select aria-label="Sezon seç">
+                    <option selected>2026/27</option>
+                </select>
+
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2.2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round"
+                     aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" />
+                </svg>
+            </label>
+        </div>
+
+        <div class="hero-row">
+            <div>
+                <h1 class="hero-title">Serie A Fikstür</h1>
+                <p class="hero-subtitle">
+                    Haftayı seç, o haftanın tüm maçlarını gün gün,
+                    skor ve durum bilgisiyle gör.
+                </p>
+            </div>
+
+            <dl class="hero-meta">
+                <div>
+                    <dt>Takım</dt>
+                    <dd>@Model.TeamCount</dd>
+                </div>
+                <div>
+                    <dt>Hafta</dt>
+                    <dd>@Model.Weeks.Count</dd>
+                </div>
+                <div>
+                    <dt>Güncel hafta</dt>
+                    <dd>@(Model.CurrentWeek > 0 ? Model.CurrentWeek.ToString() : "-")</dd>
+                </div>
+            </dl>
+        </div>
+    </header>
+
+    <nav class="week-nav" aria-label="Hafta seçici">
+        <button type="button"
+                class="week-arrow"
+                data-week-step="-1"
+                aria-label="Önceki hafta">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2.2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+                <path d="M15 6l-6 6 6 6" />
+            </svg>
+        </button>
+
+        <ul class="week-list" data-week-list></ul>
+
+        <button type="button"
+                class="week-arrow"
+                data-week-step="1"
+                aria-label="Sonraki hafta">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2.2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round"
+                 aria-hidden="true">
+                <path d="M9 6l6 6-6 6" />
+            </svg>
+        </button>
+    </nav>
+
+    <section class="panel week-info"
+             aria-live="polite"
+             data-week-info>
+    </section>
+
+    <div class="fixtures-body">
+        <div class="row g-4">
+
+            <div class="col-lg-8">
+                <section class="panel"
+                         aria-labelledby="fixtures-title">
+
+                    <div class="panel__head">
+                        <h2 class="panel__title" id="fixtures-title">
+                            Haftanın maçları
+                        </h2>
+
+                        <span class="panel__sub">
+                            Saatler Türkiye saatine göre
+                        </span>
+                    </div>
+
+                    <div class="fixtures-list"
+                         data-fixtures-list>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="col-lg-4"
+                   aria-label="Haftanın özeti ve öne çıkan maç">
+
+                <div class="side-stack">
+
+                    <section class="panel"
+                             aria-labelledby="summary-title"
+                             data-weekly-summary>
+                    </section>
+
+                    <section class="panel featured"
+                             aria-labelledby="featured-title"
+                             data-featured-match>
+                    </section>
+
+                </div>
+            </aside>
+
+        </div>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <p class="page-note" role="alert">@ViewBag.Error</p>
+    }
+    else if (Model.Weeks.Count == 0)
+    {
+        <p class="page-note">Henüz fikstür yayımlanmadı.</p>
+    }
+
+    @* fixtures.js bu verilerle hafta seçiciyi ve armaları çizer *@
+    <script type="application/json" id="fixtures-weeks">@Json.Serialize(Model.Weeks)</script>
+    <script type="application/json" id="fixtures-teams">@Json.Serialize(Model.Teams)</script>
+</main>
+
+@section Scripts {
+    <script src="~/js/fixtures.js"
+            asp-append-version="true"></script>
+}

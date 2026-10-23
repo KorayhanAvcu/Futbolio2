@@ -1,0 +1,152 @@
+@using System.Globalization
+@model Futbolio.WebUI.ViewModels.Admin.DashboardViewModel
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    ViewData["Crumb"] = "Yönetim / Ana Sayfa";
+    ViewData["ActivePage"] = "Home";
+
+    var tr = new CultureInfo("tr-TR");
+    IHtmlContent Crest(int teamId, string name) =>
+        TeamStyle.Crest(Model.Teams.GetValueOrDefault(teamId), "", name, showCode: false);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/matches.css" asp-append-version="true" />
+}
+
+<div class="page-head">
+    <div>
+        <span class="page-eyebrow">Serie A 2026/27</span>
+        <h1 class="page-title">Yönetim Paneli</h1>
+        <p class="page-desc">Ligin genel durumu, son sonuçlar ve sıradaki maçlar.</p>
+    </div>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="form-alert is-visible" role="alert" style="margin-bottom:14px">@ViewBag.Error</div>
+}
+
+<section class="league-strip" aria-label="Lig özeti">
+    <div class="strip-item strip-item--blue">
+        <span class="strip-icon"><svg class="icon" aria-hidden="true"><use href="#i-shield" /></svg></span>
+        <div><span class="strip-label">Takım</span><span class="strip-value">@Model.TeamCount</span></div>
+    </div>
+    <div class="strip-item strip-item--navy">
+        <span class="strip-icon"><svg class="icon" aria-hidden="true"><use href="#i-ball" /></svg></span>
+        <div><span class="strip-label">Maç</span><span class="strip-value">@Model.MatchCount <small>@Model.WeekCount hafta</small></span></div>
+    </div>
+    <div class="strip-item strip-item--green">
+        <span class="strip-icon"><svg class="icon" aria-hidden="true"><use href="#i-check" /></svg></span>
+        <div><span class="strip-label">Tamamlanan</span><span class="strip-value">@Model.CompletedCount <small>@Model.LiveCount canlı, @Model.ScheduledCount planlı</small></span></div>
+    </div>
+    <div class="strip-item strip-item--red">
+        <span class="strip-icon"><svg class="icon" aria-hidden="true"><use href="#i-ball" /></svg></span>
+        <div><span class="strip-label">Gol</span><span class="strip-value">@Model.GoalCount</span></div>
+    </div>
+</section>
+
+<div class="dash-grid">
+    <section class="card-a" aria-labelledby="recent-title">
+        <div class="card-head">
+            <h2 class="card-title" id="recent-title">Son sonuçlar</h2>
+            <a class="card-link" asp-controller="Matches" asp-action="Index">Tüm maçlar</a>
+        </div>
+        <div class="table-scroll">
+            <table class="mini-table">
+                <thead><tr><th scope="col">Hafta</th><th scope="col">Ev sahibi</th><th scope="col" class="col-score">Skor</th><th scope="col">Deplasman</th><th scope="col" class="col-actions"></th></tr></thead>
+                <tbody>
+                    @foreach (var m in Model.RecentResults)
+                    {
+                        <tr>
+                            <td>@m.Week. Hafta</td>
+                            <td><span class="team">@Crest(m.HomeTeamId, m.HomeTeamName)@m.HomeTeamName</span></td>
+                            <td class="col-score"><span class="score">@m.HomeScore - @m.AwayScore</span></td>
+                            <td><span class="team">@Crest(m.AwayTeamId, m.AwayTeamName)@m.AwayTeamName</span></td>
+                            <td class="col-actions"><a class="card-link" asp-controller="Matches" asp-action="Detail" asp-route-id="@m.Id">Olaylar</a></td>
+                        </tr>
+                    }
+                    @if (Model.RecentResults.Count == 0)
+                    {
+                        <tr class="table-empty"><td colspan="5"><strong>Tamamlanan maç yok</strong>Maçlar sayfasından skor girildiğinde burada görünür.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card-a" aria-labelledby="top-title">
+        <div class="card-head">
+            <h2 class="card-title" id="top-title">Puan durumu, ilk 5</h2>
+            <a class="card-link" asp-controller="Standings" asp-action="Index">Tümü</a>
+        </div>
+        <div class="table-scroll">
+            <table class="mini-table">
+                <thead><tr><th scope="col">#</th><th scope="col">Takım</th><th scope="col" class="col-num">O</th><th scope="col" class="col-num">AV</th><th scope="col" class="col-num">P</th></tr></thead>
+                <tbody>
+                    @foreach (var s in Model.TopStandings)
+                    {
+                        <tr>
+                            <td class="col-id">@s.Position</td>
+                            <td><span class="team">@Crest(s.TeamId, s.TeamName)@s.TeamName</span></td>
+                            <td class="col-num">@s.Played</td>
+                            <td class="col-num">@(s.GoalDifference > 0 ? "+" : "")@s.GoalDifference</td>
+                            <td class="col-num"><strong>@s.Points</strong></td>
+                        </tr>
+                    }
+                    @if (Model.TopStandings.Count == 0)
+                    {
+                        <tr class="table-empty"><td colspan="5"><strong>Puan durumu yok</strong>Takım eklendiğinde burada görünür.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<section class="card-a" aria-labelledby="upcoming-title" style="margin-bottom:18px">
+    <div class="card-head">
+        <h2 class="card-title" id="upcoming-title">Sıradaki maçlar</h2>
+        <a class="card-link" asp-controller="Weeks" asp-action="Index">Haftalar</a>
+    </div>
+    <div class="table-scroll">
+        <table class="mini-table">
+            <thead><tr><th scope="col">Hafta</th><th scope="col">Tarih</th><th scope="col">Ev sahibi</th><th scope="col">Deplasman</th><th scope="col">Durum</th></tr></thead>
+            <tbody>
+                @foreach (var m in Model.UpcomingMatches)
+                {
+                    <tr>
+                        <td>@m.Week. Hafta</td>
+                        <td>@m.MatchDate.ToString("dd.MM.yyyy HH:mm", tr)</td>
+                        <td><span class="team">@Crest(m.HomeTeamId, m.HomeTeamName)@m.HomeTeamName</span></td>
+                        <td><span class="team">@Crest(m.AwayTeamId, m.AwayTeamName)@m.AwayTeamName</span></td>
+                        <td><span class="badge-a badge-a--@TeamStyle.StatusKey(m.Status)">@TeamStyle.StatusText(m.Status)</span></td>
+                    </tr>
+                }
+                @if (Model.UpcomingMatches.Count == 0)
+                {
+                    <tr class="table-empty"><td colspan="5"><strong>Oynanacak maç yok</strong>Tüm maçlar tamamlandı ya da fikstür girilmedi.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<div class="quick-grid">
+    <a class="quick-card" asp-controller="Matches" asp-action="Index">
+        <span class="strip-icon"><svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg></span>
+        <div><strong>Maç ekle</strong><span>Fikstüre yeni maç gir</span></div>
+    </a>
+    <a class="quick-card" asp-controller="Teams" asp-action="Index">
+        <span class="strip-icon"><svg class="icon" aria-hidden="true"><use href="#i-shield" /></svg></span>
+        <div><strong>Takımlar</strong><span>Takım bilgilerini düzenle</span></div>
+    </a>
+    <a class="quick-card" asp-controller="Weeks" asp-action="Index">
+        <span class="strip-icon"><svg class="icon" aria-hidden="true"><use href="#i-calendar" /></svg></span>
+        <div><strong>Haftalar</strong><span>Haftalık fikstür kontrolü</span></div>
+    </a>
+    <a class="quick-card" href="/" target="_blank" rel="noopener">
+        <span class="strip-icon"><svg class="icon" aria-hidden="true"><use href="#i-eye" /></svg></span>
+        <div><strong>Siteyi görüntüle</strong><span>Kullanıcı ekranları</span></div>
+    </a>
+</div>

@@ -1,0 +1,263 @@
+@using System.Globalization
+@model Futbolio.WebUI.ViewModels.Match.MatchDetailViewModel
+@{
+    var m = Model.Match;
+    var tr = new CultureInfo("tr-TR");
+    var goals = m.Goals ?? new List<Futbolio.WebUI.DTOs.MatchGoal.MatchGoalResultDto>();
+    var cards = m.Cards ?? new List<Futbolio.WebUI.DTOs.MatchCard.MatchCardResultDto>();
+    var subs = m.Substitutions ?? new List<Futbolio.WebUI.DTOs.Substitution.SubstitutionResultDto>();
+
+    ViewData["Title"] = "Maç Detayı";
+    ViewData["Crumb"] = "Yönetim / Maçlar / " + m.HomeTeamName + " - " + m.AwayTeamName;
+    ViewData["ActivePage"] = "Matches";
+
+    var played = TeamStyle.HasScore(m.Status);
+    var homeGoals = goals.Count(g => g.TeamId == m.HomeTeamId);
+    var awayGoals = goals.Count(g => g.TeamId == m.AwayTeamId);
+    var mismatch = played && (homeGoals != m.HomeScore || awayGoals != m.AwayScore);
+
+    IHtmlContent Crest(int teamId) => teamId == m.HomeTeamId
+        ? TeamStyle.Crest(Model.HomeTeam, "", m.HomeTeamName, showCode: false)
+        : TeamStyle.Crest(Model.AwayTeam, "", m.AwayTeamName, showCode: false);
+    string TeamName(int teamId) => teamId == m.HomeTeamId ? m.HomeTeamName : m.AwayTeamName;
+    string Side(int teamId) => teamId == m.HomeTeamId ? "Ev sahibi" : "Deplasman";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/matches.css" asp-append-version="true" />
+}
+
+<div class="page-head">
+    <div>
+        <a class="card-link" asp-action="Index">← Maç listesine dön</a>
+        <h1 class="page-title" style="margin-top:6px">@m.HomeTeamName - @m.AwayTeamName</h1>
+        <p class="page-desc">Bu maçın gollerini, kartlarını ve oyuncu değişikliklerini ekleyebilir, düzenleyebilir ve silebilirsiniz.</p>
+    </div>
+    <a class="btn-a btn-a--secondary" href="/MatchDetail/Index/@m.Id" target="_blank" rel="noopener">
+        <svg class="icon" aria-hidden="true"><use href="#i-eye" /></svg>Sitede görüntüle
+    </a>
+</div>
+
+<section class="card-a match-summary" aria-label="Maç özeti"
+         data-match-id="@m.Id"
+         data-home-id="@m.HomeTeamId" data-home-name="@m.HomeTeamName"
+         data-away-id="@m.AwayTeamId" data-away-name="@m.AwayTeamName">
+    <div class="match-summary__teams">
+        <span class="team">@Crest(m.HomeTeamId)@m.HomeTeamName</span>
+        @if (played)
+        {
+            <span class="score">@m.HomeScore - @m.AwayScore</span>
+        }
+        else
+        {
+            <span class="score score--empty">-</span>
+        }
+        <span class="team">@Crest(m.AwayTeamId)@m.AwayTeamName</span>
+    </div>
+    <dl class="match-summary__facts">
+        <div><dt>Durum</dt><dd><span class="badge-a badge-a--@TeamStyle.StatusKey(m.Status)">@(m.Status == TeamStyle.StatusCompleted ? "Tamamlandı" : TeamStyle.StatusText(m.Status))</span></dd></div>
+        <div><dt>Hafta</dt><dd>@m.Week. Hafta</dd></div>
+        <div><dt>Tarih</dt><dd>@m.MatchDate.ToString("dd.MM.yyyy HH:mm", tr)</dd></div>
+        <div><dt>Stadyum</dt><dd>@(string.IsNullOrWhiteSpace(m.Stadium) ? "-" : m.Stadium)</dd></div>
+    </dl>
+</section>
+
+@if (mismatch)
+{
+    <div class="form-alert is-visible" role="status" style="margin-top:14px">
+        Kayıtlı gol sayısı (@homeGoals - @awayGoals) maç skoruyla (@m.HomeScore - @m.AwayScore) uyuşmuyor.
+        Eksik golleri ekleyin ya da skoru Maçlar listesinden düzenleyin.
+    </div>
+}
+
+@* ---------- Goller ---------- *@
+<section class="card-a event-section" aria-labelledby="goals-title">
+    <div class="card-head">
+        <h2 class="card-title" id="goals-title">Goller <span class="event-count">@goals.Count</span></h2>
+        <button type="button" class="btn-a btn-a--primary" data-event-add="goal">
+            <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Gol Ekle
+        </button>
+    </div>
+    <div class="table-scroll">
+        <table class="mini-table">
+            <thead>
+                <tr><th scope="col">Dakika</th><th scope="col">Takım</th><th scope="col">Gol atan</th><th scope="col" class="col-actions">İşlemler</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var g in goals.OrderBy(x => x.Minute))
+                {
+                    <tr data-event-row="goal" data-id="@g.Id" data-team-id="@g.TeamId" data-minute="@g.Minute" data-player="@g.PlayerName">
+                        <td>@TeamStyle.MinuteLabel(g.Minute)</td>
+                        <td><span class="team">@Crest(g.TeamId)@TeamName(g.TeamId)</span> <small class="event-side">@Side(g.TeamId)</small></td>
+                        <td><strong>@g.PlayerName</strong></td>
+                        <td class="col-actions">
+                            <div class="row-actions">
+                                <button type="button" class="act-btn" data-event-edit title="Düzenle" aria-label="Düzenle: @g.PlayerName golü"><svg class="icon" aria-hidden="true"><use href="#i-edit" /></svg></button>
+                                <button type="button" class="act-btn act-btn--danger" data-event-delete title="Sil" aria-label="Sil: @g.PlayerName golü"><svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg></button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (goals.Count == 0)
+                {
+                    <tr class="table-empty"><td colspan="4"><strong>Gol kaydı yok</strong>Gol Ekle ile bu maçın gollerini girin.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@* ---------- Kartlar ---------- *@
+<section class="card-a event-section" aria-labelledby="cards-title">
+    <div class="card-head">
+        <h2 class="card-title" id="cards-title">Kartlar <span class="event-count">@cards.Count</span></h2>
+        <button type="button" class="btn-a btn-a--primary" data-event-add="card">
+            <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Kart Ekle
+        </button>
+    </div>
+    <div class="table-scroll">
+        <table class="mini-table">
+            <thead>
+                <tr><th scope="col">Dakika</th><th scope="col">Takım</th><th scope="col">Oyuncu</th><th scope="col">Kart</th><th scope="col" class="col-actions">İşlemler</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var c in cards.OrderBy(x => x.Minute))
+                {
+                    var isRed = string.Equals(c.CardType, "Red", StringComparison.OrdinalIgnoreCase);
+                    <tr data-event-row="card" data-id="@c.Id" data-team-id="@c.TeamId" data-minute="@c.Minute" data-player="@c.PlayerName" data-card-type="@(isRed ? "Red" : "Yellow")">
+                        <td>@TeamStyle.MinuteLabel(c.Minute)</td>
+                        <td><span class="team">@Crest(c.TeamId)@TeamName(c.TeamId)</span> <small class="event-side">@Side(c.TeamId)</small></td>
+                        <td><strong>@c.PlayerName</strong></td>
+                        <td><span class="card-chip card-chip--@(isRed ? "red" : "yellow")">@(isRed ? "Kırmızı" : "Sarı")</span></td>
+                        <td class="col-actions">
+                            <div class="row-actions">
+                                <button type="button" class="act-btn" data-event-edit title="Düzenle" aria-label="Düzenle: @c.PlayerName kartı"><svg class="icon" aria-hidden="true"><use href="#i-edit" /></svg></button>
+                                <button type="button" class="act-btn act-btn--danger" data-event-delete title="Sil" aria-label="Sil: @c.PlayerName kartı"><svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg></button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (cards.Count == 0)
+                {
+                    <tr class="table-empty"><td colspan="5"><strong>Kart kaydı yok</strong>Kart Ekle ile sarı ve kırmızı kartları girin.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@* ---------- Oyuncu değişiklikleri ---------- *@
+<section class="card-a event-section" aria-labelledby="subs-title">
+    <div class="card-head">
+        <h2 class="card-title" id="subs-title">Oyuncu Değişiklikleri <span class="event-count">@subs.Count</span></h2>
+        <button type="button" class="btn-a btn-a--primary" data-event-add="sub">
+            <svg class="icon" aria-hidden="true"><use href="#i-plus" /></svg>Değişiklik Ekle
+        </button>
+    </div>
+    <div class="table-scroll">
+        <table class="mini-table">
+            <thead>
+                <tr><th scope="col">Dakika</th><th scope="col">Takım</th><th scope="col">Giren</th><th scope="col">Çıkan</th><th scope="col" class="col-actions">İşlemler</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in subs.OrderBy(x => x.Minute))
+                {
+                    <tr data-event-row="sub" data-id="@s.Id" data-team-id="@s.TeamId" data-minute="@s.Minute" data-player-in="@s.PlayerIn" data-player-out="@s.PlayerOut">
+                        <td>@TeamStyle.MinuteLabel(s.Minute)</td>
+                        <td><span class="team">@Crest(s.TeamId)@TeamName(s.TeamId)</span> <small class="event-side">@Side(s.TeamId)</small></td>
+                        <td><span class="sub-in">▲</span> <strong>@s.PlayerIn</strong></td>
+                        <td><span class="sub-out">▼</span> @s.PlayerOut</td>
+                        <td class="col-actions">
+                            <div class="row-actions">
+                                <button type="button" class="act-btn" data-event-edit title="Düzenle" aria-label="Düzenle: @s.PlayerIn değişikliği"><svg class="icon" aria-hidden="true"><use href="#i-edit" /></svg></button>
+                                <button type="button" class="act-btn act-btn--danger" data-event-delete title="Sil" aria-label="Sil: @s.PlayerIn değişikliği"><svg class="icon" aria-hidden="true"><use href="#i-trash" /></svg></button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (subs.Count == 0)
+                {
+                    <tr class="table-empty"><td colspan="5"><strong>Oyuncu değişikliği yok</strong>Değişiklik Ekle ile oyuna giren ve çıkan oyuncuları girin.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Ekleme + düzenleme modalı (gol, kart ve değişiklik için ortak) -->
+<dialog class="modal-a" id="event-modal" aria-labelledby="event-modal-title">
+    <form data-event-form novalidate>
+        <div class="modal-head">
+            <h2 class="modal-title" id="event-modal-title">Gol Ekle</h2>
+            <button type="button" class="icon-btn" data-modal-close aria-label="Kapat"><svg class="icon" aria-hidden="true"><use href="#i-x" /></svg></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-alert" data-form-alert role="alert">Lütfen işaretli alanları kontrol edin.</div>
+            <input type="hidden" name="id">
+            <input type="hidden" name="kind">
+            <div class="form-grid">
+                <div class="form-field" data-field="teamId">
+                    <label class="field-label" for="e-team">Takım <span class="req">*</span></label>
+                    <select class="select-a" id="e-team" name="teamId" aria-describedby="e-team-err">
+                        <option value="">Takım seçin</option>
+                        <option value="@m.HomeTeamId">@m.HomeTeamName (Ev sahibi)</option>
+                        <option value="@m.AwayTeamId">@m.AwayTeamName (Deplasman)</option>
+                    </select>
+                    <p class="field-error" id="e-team-err"></p>
+                </div>
+                <div class="form-field" data-field="minute">
+                    <label class="field-label" for="e-minute">Dakika <span class="req">*</span></label>
+                    <input class="input-a" id="e-minute" name="minute" type="number" min="0" max="130" inputmode="numeric" aria-describedby="e-minute-err e-minute-hint">
+                    <p class="field-hint" id="e-minute-hint">Uzatmalar için 90'dan büyük yazın (ör. 93 = 90+3).</p>
+                    <p class="field-error" id="e-minute-err"></p>
+                </div>
+                <div class="form-field span-2" data-field="playerName" data-kinds="goal card">
+                    <label class="field-label" for="e-player" data-player-label>Oyuncu <span class="req">*</span></label>
+                    <input class="input-a" id="e-player" name="playerName" type="text" maxlength="100" autocomplete="off" aria-describedby="e-player-err">
+                    <p class="field-error" id="e-player-err"></p>
+                </div>
+                <div class="form-field span-2" data-field="cardType" data-kinds="card">
+                    <label class="field-label" for="e-card">Kart tipi <span class="req">*</span></label>
+                    <select class="select-a" id="e-card" name="cardType" aria-describedby="e-card-err">
+                        <option value="Yellow">Sarı kart</option>
+                        <option value="Red">Kırmızı kart</option>
+                    </select>
+                    <p class="field-error" id="e-card-err"></p>
+                </div>
+                <div class="form-field" data-field="playerIn" data-kinds="sub">
+                    <label class="field-label" for="e-in">Oyuna giren <span class="req">*</span></label>
+                    <input class="input-a" id="e-in" name="playerIn" type="text" maxlength="100" autocomplete="off" aria-describedby="e-in-err">
+                    <p class="field-error" id="e-in-err"></p>
+                </div>
+                <div class="form-field" data-field="playerOut" data-kinds="sub">
+                    <label class="field-label" for="e-out">Oyundan çıkan <span class="req">*</span></label>
+                    <input class="input-a" id="e-out" name="playerOut" type="text" maxlength="100" autocomplete="off" aria-describedby="e-out-err">
+                    <p class="field-error" id="e-out-err"></p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-foot">
+            <button type="button" class="btn-a btn-a--secondary" data-modal-close>Vazgeç</button>
+            <button type="submit" class="btn-a btn-a--primary" data-submit>Kaydet</button>
+        </div>
+    </form>
+</dialog>
+
+<!-- Silme onayı -->
+<dialog class="modal-a modal-a--sm" id="event-delete-modal" aria-labelledby="event-delete-title">
+    <form method="dialog">
+        <div class="modal-head">
+            <h2 class="modal-title" id="event-delete-title">Kaydı sil</h2>
+            <button type="submit" value="cancel" class="icon-btn" aria-label="Kapat"><svg class="icon" aria-hidden="true"><use href="#i-x" /></svg></button>
+        </div>
+        <div class="modal-body"><p class="confirm-text" data-delete-text></p></div>
+        <div class="modal-foot">
+            <button type="submit" value="cancel" class="btn-a btn-a--secondary">Vazgeç</button>
+            <button type="submit" value="confirm" class="btn-a btn-a--danger">Evet, sil</button>
+        </div>
+    </form>
+</dialog>
+
+@section Scripts {
+    <script src="~/js/match-events.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,171 @@
+/* =============================================================
+   Futbolio - site.css  (ortak: zemin + navbar)
+   Sayfa CSS'leri (standings.css, match-detail.css) bundan sonra
+   yüklenir; navbar kendi deðiþkenlerini (--nav-*) kullanýr, böylece
+   sayfalardaki :root tanýmlarýndan etkilenmez.
+   ============================================================= */
+
+html {
+    background-color: #070F1F;
+}
+
+.site-body {
+    min-height: 100vh;
+    margin: 0;
+    background-color: #070F1F;
+    color: #E9F0FB;
+    font-family: "Barlow", "Segoe UI", system-ui, sans-serif;
+}
+
+/* ---------- Navbar ---------- */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.futbolio-navbar {
+    --nav-line: #1F3358;
+    --nav-text: #C4D0E6;
+    --nav-blue: #2E7BFF;
+    --nav-blue-bright: #5B9BFF;
+    --nav-blue-soft: rgba(46, 123, 255, .18);
+    --bs-navbar-padding-y: .65rem;
+    --bs-navbar-color: var(--nav-text);
+    --bs-navbar-hover-color: #fff;
+    --bs-navbar-active-color: #fff;
+    --bs-navbar-brand-color: #fff;
+    --bs-navbar-brand-hover-color: #fff;
+    position: relative;
+    background: rgba(10, 22, 48, .92);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--nav-line);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+    /* üst vurgu çizgisi (hero ile ayný dil) */
+    .futbolio-navbar::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, var(--nav-blue) 0%, var(--nav-blue-bright) 30%, transparent 75%);
+        pointer-events: none;
+    }
+
+/* Marka */
+.futbolio-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 1.5rem;
+    padding: 0;
+    font-family: "Barlow Condensed", "Arial Narrow", sans-serif;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    line-height: 1;
+}
+
+.brand-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: linear-gradient(145deg, var(--nav-blue-bright), var(--nav-blue));
+    color: #fff;
+    font-size: 1.05rem;
+    box-shadow: 0 6px 18px rgba(46, 123, 255, .45);
+}
+
+/* Linkler */
+.futbolio-nav {
+    gap: 4px;
+}
+
+    .futbolio-nav .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: .55rem .95rem;
+        border-radius: 10px;
+        color: var(--nav-text);
+        font-size: .95rem;
+        font-weight: 600;
+        transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
+    }
+
+        .futbolio-nav .nav-link .bi {
+            color: #8B9CC0;
+            font-size: 1.05rem;
+            transition: color .15s ease;
+        }
+
+        .futbolio-nav .nav-link:hover {
+            background: rgba(255, 255, 255, .07);
+            color: #fff;
+        }
+
+            .futbolio-nav .nav-link:hover .bi {
+                color: var(--nav-blue-bright);
+            }
+
+        .futbolio-nav .nav-link.active {
+            background: var(--nav-blue-soft);
+            color: #fff;
+            box-shadow: inset 0 0 0 1px rgba(46, 123, 255, .5);
+        }
+
+            .futbolio-nav .nav-link.active .bi {
+                color: var(--nav-blue-bright);
+            }
+
+        .futbolio-nav .nav-link:focus-visible,
+        .futbolio-brand:focus-visible,
+        .futbolio-navbar .navbar-toggler:focus-visible {
+            outline: 2px solid var(--nav-blue-bright);
+            outline-offset: 2px;
+        }
+
+/* Mobil menü butonu */
+.futbolio-navbar .navbar-toggler {
+    padding: .4rem .6rem;
+    border: 1px solid var(--nav-line);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, .04);
+}
+
+    .futbolio-navbar .navbar-toggler:focus {
+        box-shadow: 0 0 0 3px var(--nav-blue-soft);
+    }
+
+/* Mobil: açýlýr menü */
+@media (max-width: 991.98px) {
+    .futbolio-navbar .navbar-collapse {
+        margin-top: .75rem;
+        padding: .5rem 0 .25rem;
+        border-top: 1px solid var(--nav-line);
+    }
+
+    .futbolio-nav {
+        gap: 2px;
+    }
+
+        .futbolio-nav .nav-link {
+            padding: .75rem .9rem;
+        }
+
+    .futbolio-brand {
+        margin-right: 0;
+        font-size: 1.45rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .futbolio-navbar * {
+        transition: none !important;
+    }
+}

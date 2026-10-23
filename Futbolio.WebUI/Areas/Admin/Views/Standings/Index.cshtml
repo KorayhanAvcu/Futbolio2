@@ -1,0 +1,73 @@
+@model Futbolio.WebUI.ViewModels.Admin.AdminStandingsViewModel
+@{
+    ViewData["Title"] = "Puan Durumu";
+    ViewData["Crumb"] = "Yönetim / Puan Durumu";
+    ViewData["ActivePage"] = "Standings";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/matches.css" asp-append-version="true" />
+}
+
+<div class="page-head">
+    <div>
+        <span class="page-eyebrow">Serie A 2026/27</span>
+        <h1 class="page-title">Puan Durumu</h1>
+        <p class="page-desc">Tamamlanan maçlardan otomatik hesaplanır. Değiştirmek için maç skorlarını düzenleyin.</p>
+    </div>
+    <a class="btn-a btn-a--secondary" href="/Standings" target="_blank" rel="noopener">
+        <svg class="icon" aria-hidden="true"><use href="#i-eye" /></svg>Sitede görüntüle
+    </a>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="form-alert is-visible" role="alert" style="margin-bottom:14px">@ViewBag.Error</div>
+}
+
+<section class="card-a" aria-label="Puan durumu">
+    <div class="table-scroll">
+        <table class="match-table" style="min-width:720px">
+            <caption class="visually-hidden">Serie A puan durumu</caption>
+            <thead>
+                <tr>
+                    <th scope="col" class="col-id">#</th>
+                    <th scope="col">Takım</th>
+                    <th scope="col" class="col-num">O</th>
+                    <th scope="col" class="col-num">G</th>
+                    <th scope="col" class="col-num">B</th>
+                    <th scope="col" class="col-num">M</th>
+                    <th scope="col" class="col-num">AG</th>
+                    <th scope="col" class="col-num">YG</th>
+                    <th scope="col" class="col-num">AV</th>
+                    <th scope="col" class="col-num">Puan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Rows)
+                {
+                    <tr>
+                        <td class="col-id"><span>@s.Position</span></td>
+                        <td><span class="team">@TeamStyle.Crest(Model.Teams.GetValueOrDefault(s.TeamId), "", s.TeamName, showCode: false)@s.TeamName</span></td>
+                        <td class="col-num">@s.Played</td>
+                        <td class="col-num">@s.Won</td>
+                        <td class="col-num">@s.Drawn</td>
+                        <td class="col-num">@s.Lost</td>
+                        <td class="col-num">@s.GoalsFor</td>
+                        <td class="col-num">@s.GoalsAgainst</td>
+                        <td class="col-num">@(s.GoalDifference > 0 ? "+" : "")@s.GoalDifference</td>
+                        <td class="col-num"><strong>@s.Points</strong></td>
+                    </tr>
+                }
+                @if (Model.Rows.Count == 0)
+                {
+                    <tr class="table-empty"><td colspan="10"><strong>Puan durumu yok</strong>Takım ve tamamlanan maç eklendiğinde burada görünür.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="table-foot">
+        <span>@Model.CompletedCount tamamlanan maçtan hesaplandı</span>
+        <span>Sıralama: Puan → Averaj → Atılan gol</span>
+    </div>
+</section>

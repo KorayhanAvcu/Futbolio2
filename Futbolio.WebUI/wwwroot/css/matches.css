@@ -1,0 +1,91 @@
+/* Maçlar sayfasına özel stiller (ortak olanlar admin.css'te) */
+.match-table { width: 100%; min-width: 900px; border-collapse: collapse; }
+.match-table th {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: #F8FAFC;
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+.match-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--text-2);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.match-table tbody tr:last-child td { border-bottom: 0; }
+.match-table tbody tr:hover td { background: var(--row-hover); }
+.match-table tbody tr.is-new td { animation: row-flash 2.4s ease-out; }
+.match-table .col-id { width: 64px; color: var(--dim); }
+.match-table .col-id span { color: var(--muted); font-weight: 600; }
+.week-cell { color: var(--text-2); }
+
+.score-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; }
+.score-fields[hidden] { display: none; }
+
+@media (max-width: 575.98px) {
+  .score-fields { grid-template-columns: 1fr; }
+}
+
+/* Maç detayı (gol / kart / değişiklik yönetimi) */
+.match-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 28px;
+  padding: 16px 18px;
+}
+.match-summary__teams { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; font-size: 1.05rem; }
+.match-summary__teams .score { font-size: 1.05rem; }
+.match-summary__facts { display: flex; flex-wrap: wrap; gap: 8px 26px; margin: 0; }
+.match-summary__facts dt { color: var(--muted); font-size: .75rem; font-weight: 600; }
+.match-summary__facts dd { margin: 2px 0 0; color: var(--text); font-weight: 600; }
+
+.event-section { margin-top: 18px; }
+.event-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: .75rem;
+}
+.event-side { color: var(--dim); font-size: .75rem; }
+.mini-table .col-actions { width: 1%; text-align: right; }
+.card-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: .85rem;
+}
+.card-chip::before { content: ""; width: 10px; height: 14px; border-radius: 2px; background: currentColor; }
+.card-chip--yellow { color: #C79A00; }
+.card-chip--red { color: var(--red); }
+.sub-in { color: var(--green); font-size: .7rem; }
+.sub-out { color: var(--red); font-size: .7rem; }
+.form-field[hidden] { display: none; }
+
+/* Hafta özeti */
+.week-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.week-card { padding: 14px 16px; }
+.week-card__head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.week-card__title { margin: 0; font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; }
+.week-card__range { margin: 0 0 10px; color: var(--muted); font-size: .85rem; }
+.week-card__facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 0 0 10px; }
+.week-card__facts dt { color: var(--muted); font-size: .72rem; font-weight: 600; }
+.week-card__facts dd { margin: 0; font-weight: 700; color: var(--text); }
+.week-bar { display: flex; height: 6px; overflow: hidden; border-radius: 3px; background: var(--bg); margin-bottom: 10px; }
+.week-bar span:nth-child(1) { background: var(--navy-700); }
+.week-bar span:nth-child(2) { background: var(--green); }
+.week-warn { margin: 0 0 10px; color: var(--amber); font-size: .8rem; font-weight: 600; }
+.week-ok { margin: 0 0 10px; color: var(--green); font-size: .8rem; font-weight: 600; }

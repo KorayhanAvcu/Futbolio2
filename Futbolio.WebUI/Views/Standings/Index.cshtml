@@ -24,6 +24,9 @@
     string X(int pts) => ((pts - minPts) / (double)(maxPts - minPts) * 100).ToString("0.00", inv);
     var ticks = Enumerable.Range(1, maxPts / 5).Select(i => i * 5).Where(t => t > minPts).ToList();
 
+    // Aynı puandaki takımlar şeritte üst üste dizilir; en kalabalık grup şerit yüksekliğini belirler
+    var maxStack = count > 0 ? rows.GroupBy(r => r.Standing.Points).Max(g => g.Count()) - 1 : 0;
+
     var leader = count > 0 ? rows[0] : null;
     var runnerUp = count > 1 ? rows[1] : null;
     var attack = rows.OrderByDescending(r => r.Standing.GoalsFor).FirstOrDefault();
@@ -72,7 +75,7 @@
                     <p class="ladder-hint">Tabloda görmek için bir takıma dokun</p>
                 </div>
                 <div class="ladder-scroll">
-                    <div class="ladder-track">
+                    <div class="ladder-track" style="--max-stack:@maxStack">
                         <span class="ladder-axis" aria-hidden="true"></span>
                         @foreach (var tick in ticks)
                         {

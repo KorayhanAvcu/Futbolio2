@@ -219,7 +219,8 @@ img.team-crest {
 .ladder-track {
     position: relative;
     min-width: 680px;
-    height: 116px;
+    /* Aynı puanda üst üste en çok kaç arma var (--max-stack, Index.cshtml verir); hepsi sığsın */
+    height: max(116px, calc(80px + var(--max-stack, 0) * 34px));
     margin: 0 18px;
 }
 

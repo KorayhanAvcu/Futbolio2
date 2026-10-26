@@ -137,14 +137,14 @@ def test_pages():
     check("Fikstür JSON: maçsız hafta boş liste", status == 200 and parse(body) == [], body[:80])
 
     _, body = page("/Standings")
-    check("Puan durumu: lider Inter, son sırada Venezia", body.index("Inter") < body.index("Venezia"))
+    check("Puan durumu: lider Napoli, son sırada Lecce", body.index("Napoli") < body.index("Lecce"))
     check("Puan durumu: form rozetleri var", "form-badge--w" in body)
 
     _, body = page("/MatchDetail/Index/1")
     check("Maç detayı: golcü, kart ve değişiklik görünüyor",
-          all(s in body for s in ("Lautaro Martínez", "Youssouf Fofana", "Davide Frattesi", "i-card--red")))
+          all(s in body for s in ("Federico Baschirotto", "Warren Bondo", "Samuel Chukwueze", "i-card--yellow")))
     _, body = page("/MatchDetail/Index/21")
-    check("Maç detayı: başlamamış maç", "Başlamadı" in body)
+    check("Maç detayı: oynanmış maç", "Maç bitti" in body)
 
     _, body = page("/Admin/Weeks")
     check("Haftalar: 3 hafta kurallara uygun", body.count("Fikstür kurallara uygun") == 3)

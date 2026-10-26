@@ -75,7 +75,7 @@ Tarayıcı  ──►  Futbolio.WebUI (MVC, port 7088)  ──►  Futbolio.API 
 |---|---|
 | [Program.cs](Futbolio.API/Program.cs) | Servisleri kaydeder; açılışta migration + örnek veri |
 | [Context/ApiContext.cs](Futbolio.API/Context/ApiContext.cs) | EF Core: tablolar ve ilişkiler (silme davranışları) |
-| [Context/SeedData.cs](Futbolio.API/Context/SeedData.cs) | Örnek veriler (sadece veritabanı boşsa) |
+| [Context/SeedData.cs](Futbolio.API/Context/SeedData.cs) | Gerçek Serie A 2025-26 verileri: ilk 3 hafta, 30 maç, 5 detaylı maç (sadece veritabanı boşsa) |
 | `Entities/` | Veritabanı tabloları (Team, Match, Match_Goal, Match_Card, Substitution) |
 | `DTOs/` | API'nin aldığı/verdiği veri şekilleri. Entity'yi doğrudan dışarı vermeyiz |
 | [Mapping/MappingProfile.cs](Futbolio.API/Mapping/MappingProfile.cs) | AutoMapper: Entity ↔ DTO dönüşümleri |
@@ -281,7 +281,7 @@ python Tests\e2e_test.py --web https://localhost:7088 --api https://localhost:71
 
 ### Bilmen gerekenler
 
-- **Testler örnek verilere göre yazıldı.** Örneğin "1. maç Inter 2-1 Milan" ya da "lider Inter" gibi
+- **Testler örnek verilere göre yazıldı.** Örneğin "1. maç Milan 1-2 Cremonese" ya da "lider Napoli" gibi
   kontroller [SeedData.cs](Futbolio.API/Context/SeedData.cs)'teki verilere dayanır. Bu yüzden
   veritabanı her seferinde boş başlamalı; `run-e2e.ps1` bunu kendisi yapar. Örnek verileri
   değiştirirsen ilgili kontrolleri de `e2e_test.py`'de güncelle.

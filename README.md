@@ -337,8 +337,3 @@ Futbolio.slnx
 > Kodu ilk kez okuyorsan önce [ACIKLAMALAR.md](ACIKLAMALAR.md)'ye bak. Bir isteğin adım adım yolculuğu,
 > hangi dosyanın ne yaptığı ve kodda geçen kavramlar (DI, async/await, fetch, `<dialog>` …) orada anlatılıyor.
 
-## Bilinen sınırlamalar
-
-- Yönetim panelinde giriş (authentication) yok.
-- Maç skoru ile gol kayıtları ayrı tutulur. Sayıları uyuşmazsa maç detayında uyarı çıkar.
-- "Ertelendi" maç durumu yok (0 Planlandı, 1 Canlı, 2 Tamamlandı).

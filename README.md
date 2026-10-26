@@ -15,6 +15,7 @@ Aynı solution içinde iki proje vardır: veritabanına erişen **Web API** ve b
 ## İçindekiler
 
 - [Özellikler](#özellikler)
+- [Case gereksinimleri](#case-gereksinimleri)
 - [Ekran görüntüleri](#ekran-görüntüleri)
 - [Mimari](#mimari)
 - [Veri modeli](#veri-modeli)
@@ -51,6 +52,32 @@ Aynı solution içinde iki proje vardır: veritabanına erişen **Web API** ve b
   gol/kart/değişiklik kayıtlı 3 maç.
 - Tek komutla çalışan **60 kontrollük uçtan uca test**.
 - Telefon ekranına uyumlu tasarım.
+
+## Case gereksinimleri
+
+Bootcamp case dokümanındaki (Serie A Futbol Uygulaması) maddelerin projede nerede karşılandığı:
+
+| Gereksinim | Durum | Projede |
+|---|:-:|---|
+| Aynı solution'da ayrı API ve WebUI projeleri | ✅ | `Futbolio.API` + `Futbolio.WebUI` (case'teki `SerieA.API` / `SerieA.WebUI` karşılığı) |
+| UI veritabanına doğrudan erişmez, her şey API'den | ✅ | WebUI'da DbContext yok; okumalar `FootballDataService`, kayıtlar admin controller'ları ile API'ye gider |
+| EF Core + SQL Server, tek katman | ✅ | `ApiContext`, migration'lar, ekstra servis/repository katmanı yok |
+| API: Controllers · Entities · Context · DTOs | ✅ | `Futbolio.API/` klasör yapısı |
+| WebUI: Controllers · Views · ViewModels | ✅ | `Futbolio.WebUI/` klasör yapısı |
+| Tablolar: Team, Match, MatchGoal, MatchCard, Substitution | ✅ | `Entities/`, oyuncu tablosu yok, isimler metin |
+| 20 takım, en az 3 hafta, haftada 10 maç, en az 30 maç | ✅ | `SeedData`: 20 takım, 3 hafta × 10 maç = 30 maç |
+| En az 3 detaylı maç | ✅ | Inter-Milan, Roma-Lazio, Napoli-Juventus (gol sayıları skorla tutarlı) |
+| Puan durumu dinamik, ayrı standings tablosu yok | ✅ | `GET /api/standings` her istekte hesaplar |
+| G 3 · B 1 · M 0; sıralama Puan → Averaj → Atılan gol | ✅ | `StandingsController` |
+| Haftalık fikstür, seçilen haftanın 10 maçı | ✅ | `/Fixtures` + `GET /api/matches/week/{week}` |
+| Maç detayı: skor, gol dakikaları, kartlar, değişiklikler | ✅ | `/MatchDetail/Index/{id}` + `GET /api/matches/{id}` |
+| Sidebar'lı Türkçe admin paneli, maç CRUD | ✅ | `/Admin/Matches` (+ gol, kart, değişiklik, takım CRUD) |
+| Ev sahibi ≠ deplasman | ✅ | API `CheckMatch` → 400 |
+| Takım aynı hafta tek maç | ✅ | API `CheckMatch` → 400 |
+| Puana sadece **Tamamlandı** maçlar girer | ✅ | `Status == Completed` filtresi |
+| Averaj = Atılan − Yenilen | ✅ | `GoalDifference = GoalsFor - GoalsAgainst` |
+| Gol/kart/değişiklik geçerli bir maça bağlı | ✅ | FK + `CheckMatchAndTeam` → olmayan maç 404, yanlış takım 400 |
+| Bulunamayan / silinmiş kayıtta uygun HTTP cevabı | ✅ | 404 `NotFound`, kural ihlalinde 400 |
 
 ## Ekran görüntüleri
 

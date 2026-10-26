@@ -10,10 +10,7 @@ namespace Futbolio.WebUI.Services
     {
         private readonly HttpClient _client;
 
-        // Typed client: Program.cs'teki AddHttpClient<IFootballDataService, FootballDataService> satırı
-        // bu sınıfa hazır ayarlanmış bir HttpClient verir. 'new HttpClient()' yazmıyoruz; her seferinde
-        // yeni bağlantı açmak yük altında soket tükenmesine yol açar, factory bağlantıları yeniden kullanır.
-        // BaseAddress Program.cs'te appsettings "ApiSettings:BaseUrl" değerinden verilir
+       
         public FootballDataService(HttpClient client)
         {
             _client = client;
